@@ -9,7 +9,7 @@ CORS(app)
 def metrics():
     try:
         uid = request.headers.get('X-UID')
-        account_id = request.headers.get('X-ACCOUNT-ID')
+        accounts = request.args.get('accounts')
         campaigns = request.args.get('campaings')
 
         response = {

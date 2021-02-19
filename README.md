@@ -60,7 +60,8 @@ gcloud iam service-accounts add-iam-policy-binding \
 https://cloud.google.com/cloud-build/docs/deploying-builds/deploy-cloud-run#required_iam_permissions
 
 
-## Listar Bms
+## Recuperar métricas
+
 
 
 ```
