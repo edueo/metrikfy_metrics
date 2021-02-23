@@ -21,7 +21,7 @@ def metrics():
             "cost_per_conversion": 30.20,
             "click_cost": 7.82,
             "cpm_average": 4.2,
-            "cpm_average": 1.3,
+            "cpc_average": 1.3,
             "reach": 1579,
             "views": 300,
         }
