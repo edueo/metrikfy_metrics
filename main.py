@@ -63,7 +63,7 @@ def metrics():
             "conversions": conversions,
             "conversions_rate": (conversions/impressions) * 100 if impressions else 0,
             "cost_per_conversion": spend/conversions if conversions else 0,
-            "click_cost": click_cost/clicks,
+            "click_cost": click_cost/clicks if clicks else 0,
             "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
             "cpc_average": (click_cost/clicks) / number_of_campaigns if number_of_campaigns else 0,
             "reach": reach,
