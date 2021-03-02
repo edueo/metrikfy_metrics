@@ -47,8 +47,6 @@ def metrics():
                     views += int(action.get('value'))
 
                 if action.get("action_type") == "complete_registration" \
-                        or action.get("action_type") == "initiate_checkout" \
-                        or "cart" in action.get("action_type") \
                         or "purchase" in action.get('action_type'):
                     conversions += float(action.get("value"))
 
