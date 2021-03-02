@@ -18,7 +18,7 @@ def metrics():
             pertence de fato ao usuário
         """
 
-        campaigns = request.args.get('accounts').split(',')
+        campaigns = request.args.get('campaigns').split(',')
         firestore_client = firestore.Client()
         campaigns_ref = firestore_client.collection('campaigns').where(u'id', u'in', campaigns).stream()
 
