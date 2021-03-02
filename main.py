@@ -54,7 +54,7 @@ def metrics():
 
         response = {
             "clicks": clicks,
-            "ctr": impressions/clicks if clicks else 0,
+            "ctr": clicks/views if clicks else 0,
             "impressions": impressions,
             "conversions": conversions,
             "conversions_rate": conversions_rate,
