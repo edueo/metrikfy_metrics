@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, jsonify, escape, request
 from flask_cors import CORS
 from google.cloud import firestore
@@ -66,7 +67,10 @@ def metrics():
         }
         return jsonify(response), 200
     except Exception as e:
-        return f"An Error Occured: {e}"
+        exception_type, exception_object, exception_traceback = sys.exc_info()
+        line_number = exception_traceback.tb_lineno
+
+        return f"An Error Occured: {e}, line: {line_number}"
 
 if __name__ == "__main__":
     app.run(debug=True,host='0.0.0.0',port=os.environ.get('PORT', 80))
