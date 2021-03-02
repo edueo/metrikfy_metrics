@@ -51,7 +51,7 @@ def metrics():
                     conversions += float(action.get("value"))
 
             for cost_per_action in campaign.get('cost_per_action_type'):
-                if cost_per_action.get('action_type') == "link_click":
+                if "click" in cost_per_action.get('action_type'):
                     click_cost += float(cost_per_action.get('value'))
 
             number_of_campaigns += 1
@@ -62,8 +62,8 @@ def metrics():
             "impressions": impressions,
             "conversions": conversions,
             "conversions_rate": (conversions/impressions) * 100 if impressions else 0,
-            "cost_per_conversion": cost_per_conversion,
-            "click_cost": click_cost,
+            "cost_per_conversion": cost_per_conversion/conversions,
+            "click_cost": click_cost/clicks,
             "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
             "cpc_average": (click_cost/clicks) / number_of_campaigns if number_of_campaigns else 0,
             "reach": reach,
