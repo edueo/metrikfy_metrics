@@ -1,6 +1,7 @@
 import os
 from flask import Flask, jsonify, escape, request
 from flask_cors import CORS
+from google.cloud import firestore
 
 app = Flask(__name__)
 CORS(app)
@@ -10,20 +11,58 @@ def metrics():
     try:
         uid = request.headers.get('X-UID')
         accounts = request.args.get('accounts')
-        campaigns = request.args.get('campaings')
+        """ 
+            Recupera as campanhas pelo accounts e campaign_id 
+            - uid e accounts serão usados futuramente para validar se a campanha
+            pertence de fato ao usuário
+        """
+
+        campaigns = request.args.get('accounts').split(',')
+        firestore_client = firestore.Client()
+        campaigns_ref = firestore_client.collection('campaigns').where(u'id', u'in', campaigns).stream()
+
+        clicks = 0
+        ctr = 0
+        impressions =0
+        conversions = 0
+        conversions_rate = 0
+        cost_per_conversion = 0
+        click_cost = 0
+        cpm_average = 0
+        cpc_average = 0
+        reach = 0
+        views = 0
+        number_of_campaigns = 0
+        for doc in campaigns_ref:
+            campaign = doc.to_dict()
+            reach += float(campaign.get('reach'))
+            cost_per_conversion += float(campaign.get('spend'))
+            impressions += float(campaign.get('impressions'))
+            for action in campaign.get('actions'):
+                if action.get('action_type') == "link_click":
+                    clicks += int(action.get('value'))
+
+                if action.get('action_type') == "view_content":
+                    views += int(action.get('value'))
+
+            for cost_per_action in campaign.get('cost_per_action_type'):
+                if cost_per_action.get('action_type') == "link_click":
+                    click_cost += float(cost_per_action.get('value'))
+
+            number_of_campaigns += 1
 
         response = {
-            "clicks": 173,
-            "ctr": 0.15,
-            "impressions": 1582,
-            "conversions": 45,
-            "conversions_rate": 45/1582,
-            "cost_per_conversion": 30.20,
-            "click_cost": 7.82,
-            "cpm_average": 4.2,
-            "cpc_average": 1.3,
-            "reach": 1579,
-            "views": 300,
+            "clicks": clicks,
+            "ctr": impressions/clicks,
+            "impressions": impressions,
+            "conversions": conversions,
+            "conversions_rate": conversions_rate,
+            "cost_per_conversion": cost_per_conversion,
+            "click_cost": click_cost,
+            "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns,
+            "cpc_average": (click_cost/clicks) / number_of_campaigns,
+            "reach": reach,
+            "views": views,
         }
         return jsonify(response), 200
     except Exception as e:
