@@ -54,14 +54,14 @@ def metrics():
 
         response = {
             "clicks": clicks,
-            "ctr": impressions/clicks,
+            "ctr": impressions/clicks if clicks else 0,
             "impressions": impressions,
             "conversions": conversions,
             "conversions_rate": conversions_rate,
             "cost_per_conversion": cost_per_conversion,
             "click_cost": click_cost,
-            "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns,
-            "cpc_average": (click_cost/clicks) / number_of_campaigns,
+            "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
+            "cpc_average": (click_cost/clicks) / number_of_campaigns if number_of_campaigns else 0,
             "reach": reach,
             "views": views,
         }
