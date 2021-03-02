@@ -27,7 +27,7 @@ def metrics():
         impressions =0
         conversions = 0
         conversions_rate = 0
-        cost_per_conversion = 0
+        spend = 0
         click_cost = 0
         cpm_average = 0
         cpc_average = 0
@@ -37,7 +37,7 @@ def metrics():
         for doc in campaigns_ref:
             campaign = doc.to_dict()
             reach += float(campaign.get('reach'))
-            cost_per_conversion += float(campaign.get('spend'))
+            spend += float(campaign.get('spend'))
             impressions += float(campaign.get('impressions'))
             for action in campaign.get('actions'):
                 if "click" in action.get('action_type'):
@@ -62,12 +62,14 @@ def metrics():
             "impressions": impressions,
             "conversions": conversions,
             "conversions_rate": (conversions/impressions) * 100 if impressions else 0,
-            "cost_per_conversion": cost_per_conversion/conversions if conversions else 0,
+            "cost_per_conversion": spend/conversions if conversions else 0,
             "click_cost": click_cost/clicks,
             "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
             "cpc_average": (click_cost/clicks) / number_of_campaigns if number_of_campaigns else 0,
             "reach": reach,
             "views": views,
+            "spend": spend,
+            "frequency": campaign.get('frequency')
         }
         return jsonify(response), 200
     except Exception as e:
