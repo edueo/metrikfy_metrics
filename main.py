@@ -19,9 +19,8 @@ def metrics():
         """
 
         campaigns = request.args.get('campaigns').split(',')
-        return jsonify(campaigns)
         firestore_client = firestore.Client()
-        campaigns_ref = firestore_client.collection('campaigns').where(u'id', u'in', campaigns).stream()
+        campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in', campaigns).stream()
 
         clicks = 0
         ctr = 0
