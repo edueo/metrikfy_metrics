@@ -43,7 +43,7 @@ def metrics():
                 if action.get('action_type') == "link_click":
                     clicks += int(action.get('value'))
 
-                if action.get('action_type') == "view_content":
+                if "view" in action.get('action_type'):
                     views += int(action.get('value'))
 
             for cost_per_action in campaign.get('cost_per_action_type'):
@@ -54,7 +54,7 @@ def metrics():
 
         response = {
             "clicks": clicks,
-            "ctr": clicks/views if clicks else 0,
+            "ctr": clicks/views if views else 0,
             "impressions": impressions,
             "conversions": conversions,
             "conversions_rate": conversions_rate,
