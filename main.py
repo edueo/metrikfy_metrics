@@ -40,11 +40,17 @@ def metrics():
             cost_per_conversion += float(campaign.get('spend'))
             impressions += float(campaign.get('impressions'))
             for action in campaign.get('actions'):
-                if action.get('action_type') == "link_click":
+                if "click" in action.get('action_type'):
                     clicks += int(action.get('value'))
 
                 if "view" in action.get('action_type'):
                     views += int(action.get('value'))
+
+                if action.get("action_type") == "complete_registration" \
+                        or action.get("action_type") == "initiate_checkout" \
+                        or "cart" in action.get("action_type") \
+                        or "purchase" in action.get('action_type'):
+                    conversions += float(action.get("value"))
 
             for cost_per_action in campaign.get('cost_per_action_type'):
                 if cost_per_action.get('action_type') == "link_click":
@@ -57,7 +63,7 @@ def metrics():
             "ctr": clicks/views if views else 0,
             "impressions": impressions,
             "conversions": conversions,
-            "conversions_rate": conversions_rate,
+            "conversions_rate": (conversions/impressions) * 100 if impressions else 0,
             "cost_per_conversion": cost_per_conversion,
             "click_cost": click_cost,
             "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
