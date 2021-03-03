@@ -22,9 +22,6 @@ def metrics():
         firestore_client = firestore.Client()
 
         if campaigns:
-            if accounts:
-                campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in', campaigns.split(',')).where(u'account_id', u'in', accounts.split(',')).stream()
-            else:
                 campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in',
                                                                                campaigns.split(',')).stream()
         else:
