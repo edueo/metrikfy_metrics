@@ -18,27 +18,29 @@ def metrics():
             pertence de fato ao usuário
         """
 
-        campaigns = request.args.get('campaigns').split(',')
+        campaigns = request.args.get('campaigns')
         firestore_client = firestore.Client()
-        campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in', campaigns).stream()
+
+        if campaigns:
+            campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in', campaigns.split(',')).stream()
+        else:
+            campaigns_ref = firestore_client.collection('campaigns').where(u'uid', u'==', uid).stream()
 
         clicks = 0
-        ctr = 0
         impressions =0
         conversions = 0
-        conversions_rate = 0
         spend = 0
         click_cost = 0
-        cpm_average = 0
-        cpc_average = 0
         reach = 0
         views = 0
         number_of_campaigns = 0
+        frequency = 0
         for doc in campaigns_ref:
             campaign = doc.to_dict()
             reach += float(campaign.get('reach'))
             spend += float(campaign.get('spend'))
             impressions += float(campaign.get('impressions'))
+            frequency += float(campaign.get('frequency'))
             for action in campaign.get('actions'):
                 if "click" in action.get('action_type'):
                     clicks += int(action.get('value'))
@@ -69,7 +71,7 @@ def metrics():
             "reach": reach,
             "views": views,
             "spend": spend,
-            "frequency": campaign.get('frequency')
+            "frequency": frequency
         }
         return jsonify(response), 200
     except Exception as e:
