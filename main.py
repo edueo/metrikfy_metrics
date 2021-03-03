@@ -22,9 +22,16 @@ def metrics():
         firestore_client = firestore.Client()
 
         if campaigns:
-            campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in', campaigns.split(',')).stream()
+            if accounts:
+                campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in', campaigns.split(',')).where(u'account_id', u'in', accounts.split(',')).stream()
+            else:
+                campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in',
+                                                                               campaigns.split(',')).stream()
         else:
-            campaigns_ref = firestore_client.collection('campaigns').where(u'uid', u'==', uid).stream()
+            if accounts:
+                campaigns_ref = firestore_client.collection('campaigns').where(u'uid', u'==', uid).where(u'account_id', u'in', accounts.split(',')).stream()
+            else:
+                campaigns_ref = firestore_client.collection('campaigns').where(u'uid', u'==', uid).stream()
 
         clicks = 0
         impressions =0
