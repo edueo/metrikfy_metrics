@@ -61,9 +61,6 @@ def metrics():
                     click_cost += float(cost_per_action.get('value'))
 
             number_of_campaigns += 1
-        cpc_average = 0
-        if clicks:
-            cpc_average = (click_cost/clicks) / number_of_campaigns if number_of_campaigns else 0,
 
         response = {
             "clicks": clicks,
@@ -74,7 +71,7 @@ def metrics():
             "cost_per_conversion": spend/conversions if conversions else 0,
             "click_cost": click_cost/clicks if clicks else 0,
             "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
-            "cpc_average": cpc_average,
+            "cpc_average": (click_cost/clicks if clicks else 0) / number_of_campaigns if number_of_campaigns else 0,
             "reach": reach,
             "views": views,
             "spend": spend,
