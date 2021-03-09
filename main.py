@@ -3,81 +3,113 @@ import sys
 from flask import Flask, jsonify, escape, request
 from flask_cors import CORS
 from google.cloud import firestore
+import requests
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
+
+db = firestore.Client()
+
+def clean_campaign(campaign):
+    print(campaign)
+    clicks = 0
+    views = 0
+    conversions = 0
+    click_cost = 0
+
+    if campaign.get('actions'):
+        for action in campaign.get('actions'):
+            if "click" in action.get('action_type'):
+                clicks = action.get('value')
+
+            if "view" in action.get('action_type'):
+                views = action.get('value')
+
+            if action.get("action_type") == "complete_registration" \
+                    or "purchase" in action.get('action_type'):
+                conversions = action.get("value")
+
+    if campaign.get('cost_per_action_type'):
+        for cost_per_action in campaign.get('cost_per_action_type'):
+            if "click" in cost_per_action.get('action_type'):
+                click_cost = cost_per_action.get('value')
+    spend = float(campaign.get("spend"))
+    clicks = int(clicks)
+    views = int(views)
+    impressions = float(campaign.get('impressions'))
+    conversions = float(conversions)
+    click_cost = float(click_cost)
+    return {
+        "clicks": clicks,
+        "ctr": clicks / views if views else 0,
+        "conversions_rate": (conversions / impressions) * 100 if impressions else 0,
+        "cost_per_conversion": spend / conversions if conversions else 0,
+        "click_cost": click_cost / clicks if clicks else 0,
+        "cpm_average": (click_cost / impressions * 1000),
+        "cpc_average": (click_cost / clicks if clicks else 0),
+        "views": int(views),
+        "conversions": float(conversions),
+        "reach" : float(campaign.get('reach')),
+        "spend" : spend,
+        "impressions" : float(campaign.get('impressions')),
+        "frequency" : float(campaign.get('frequency')),
+    }
 
 @app.route("/", methods=["GET"])
 def metrics():
     try:
         uid = request.headers.get('X-UID')
         accounts = request.args.get('accounts')
-        """ 
-            Recupera as campanhas pelo accounts e campaign_id 
-            - uid e accounts serão usados futuramente para validar se a campanha
-            pertence de fato ao usuário
-        """
 
         campaigns = request.args.get('campaigns')
-        firestore_client = firestore.Client()
 
-        if campaigns:
-                campaigns_ref = firestore_client.collection('campaigns').where(u'campaign_id', u'in',
-                                                                               campaigns.split(',')).stream()
+        if accounts:
+            accounts = db.collection(u'ad_accounts').where(u'uid', u'==', uid).where(u'account_id', u'in', accounts.split(',')).stream()
         else:
-            if accounts:
-                campaigns_ref = firestore_client.collection('campaigns').where(u'uid', u'==', uid).where(u'account_id', u'in', accounts.split(',')).stream()
-            else:
-                campaigns_ref = firestore_client.collection('campaigns').where(u'uid', u'==', uid).stream()
+            accounts = db.collection(u'ad_accounts').where(u'uid', u'==', uid).stream()
 
-        clicks = 0
-        impressions =0
-        conversions = 0
-        spend = 0
-        click_cost = 0
-        reach = 0
-        views = 0
-        number_of_campaigns = 0
-        frequency = 0
-        for doc in campaigns_ref:
-            campaign = doc.to_dict()
-            reach += float(campaign.get('reach'))
-            spend += float(campaign.get('spend'))
-            impressions += float(campaign.get('impressions'))
-            frequency += float(campaign.get('frequency'))
-            for action in campaign.get('actions'):
-                if "click" in action.get('action_type'):
-                    clicks += int(action.get('value'))
 
-                if "view" in action.get('action_type'):
-                    views += int(action.get('value'))
+        raw_campaigns = []
+        for doc in accounts:
+            account = doc.to_dict()
+            uid = account.get('uid')
+            profile_id = account.get('profile_id')
+            account_id = account.get('account_id')
 
-                if action.get("action_type") == "complete_registration" \
-                        or "purchase" in action.get('action_type'):
-                    conversions += float(action.get("value"))
+            url = f'https://us-east1-etus-metrikfy-prod.cloudfunctions.net/metrikfy-facebookads-dev-getData?user_id={uid}&profile_id={profile_id}&account_id=act_{account_id}&level=campaign'
+            res = requests.get(url)
+            print(url)
+            print(res.status_code)
+            res = requests.get(url)
+            if res.status_code == 200:
+                for campaign in res.json():
+                    campaign_id = campaign.get('campaign_id')
+                    print(campaign_id)
+                    print(campaign)
+                    if campaigns:
+                        if campaign_id in campaigns.split(','):
+                            raw_campaigns.append(clean_campaign(campaign))
+                    else:
+                        raw_campaigns.append(clean_campaign(campaign))
+        df = pd.DataFrame.from_records(raw_campaigns)
+        print(df['clicks'].sum())
 
-            for cost_per_action in campaign.get('cost_per_action_type'):
-                if "click" in cost_per_action.get('action_type'):
-                    click_cost += float(cost_per_action.get('value'))
+        return jsonify({
+            "clicks": int(df['clicks'].sum()),
+            "ctr": float(df['ctr'].mean()),
+            "conversions_rate": float(df['conversions_rate'].mean()),
+            "conversions": int(df['conversions'].sum()),
+            "cost_per_conversion": float(df['cost_per_conversion'].mean()),
+            "cpc_average": float(df['cpc_average'].mean()),
+            "cpm_average": float(df['cpm_average'].mean()),
+            "frequency": float(df['frequency'].mean()),
+            "impressions": int(df['impressions'].sum()),
+            "reach": float(df['reach'].sum()),
+            "spend": float(df['spend'].sum()),
+            "views": int(df['views'].sum())
+        }), 200
 
-            number_of_campaigns += 1
-
-        response = {
-            "clicks": clicks,
-            "ctr": clicks/views if views else 0,
-            "impressions": impressions,
-            "conversions": conversions,
-            "conversions_rate": (conversions/impressions) * 100 if impressions else 0,
-            "cost_per_conversion": spend/conversions if conversions else 0,
-            "click_cost": click_cost/clicks if clicks else 0,
-            "cpm_average": (click_cost/impressions * 1000) / number_of_campaigns if number_of_campaigns else 0,
-            "cpc_average": (click_cost/clicks if clicks else 0) / number_of_campaigns if number_of_campaigns else 0,
-            "reach": reach,
-            "views": views,
-            "spend": spend,
-            "frequency": frequency
-        }
-        return jsonify(response), 200
     except Exception as e:
         exception_type, exception_object, exception_traceback = sys.exc_info()
         line_number = exception_traceback.tb_lineno
