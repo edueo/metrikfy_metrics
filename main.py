@@ -93,8 +93,6 @@ def metrics():
                     else:
                         raw_campaigns.append(clean_campaign(campaign))
         df = pd.DataFrame.from_records(raw_campaigns)
-        print(df['clicks'].sum())
-
         return jsonify({
             "clicks": int(df['clicks'].sum()),
             "ctr": float(df['ctr'].mean()),
