@@ -65,7 +65,10 @@ def metrics():
         campaigns = request.args.get('campaigns')
 
         if accounts:
-            accounts = db.collection(u'ad_accounts').where(u'uid', u'==', uid).where(u'account_id', u'in', accounts.split(',')).stream()
+            clean_accounts = []
+            for account in accounts.split(','):
+                clean_accounts.append(account.partition('_')[2])
+            accounts = db.collection(u'ad_accounts').where(u'uid', u'==', uid).where(u'account_id', u'in', clean_accounts).stream()
         else:
             accounts = db.collection(u'ad_accounts').where(u'uid', u'==', uid).stream()
 
