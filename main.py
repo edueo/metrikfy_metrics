@@ -81,15 +81,11 @@ def metrics():
             account_id = account.get('account_id')
 
             url = f'https://us-east1-etus-metrikfy-prod.cloudfunctions.net/metrikfy-facebookads-dev-getData?user_id={uid}&profile_id={profile_id}&account_id=act_{account_id}&level=campaign'
-            res = requests.get(url)
-            print(url)
-            print(res.status_code)
+            #requests.get(url)
             res = requests.get(url)
             if res.status_code == 200:
                 for campaign in res.json():
                     campaign_id = campaign.get('campaign_id')
-                    print(campaign_id)
-                    print(campaign)
                     if campaigns:
                         if campaign_id in campaigns.split(','):
                             raw_campaigns.append(clean_campaign(campaign))
