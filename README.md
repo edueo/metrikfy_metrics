@@ -65,5 +65,5 @@ https://cloud.google.com/cloud-build/docs/deploying-builds/deploy-cloud-run#requ
 
 
 ```
-curl "https://metrics-e24zyhbnkq-uc.a.run.app?accounts=act_123,act_456&campaingns=123,567,828" -H "Content-Type:application/json" -H "X-UID:7P7XMLKzHwQIjb9q5SgQDUd9bLm1" 
+curl "https://metrics-e24zyhbnkq-uc.a.run.app?accounts=act_1360566347624412&campaigns=23846895715500393,23846093461800393,23846897167180393" -H "Content-Type:application/json" -H "X-UID:7P7XMLKzHwQIjb9q5SgQDUd9bLm1" 
 ```
