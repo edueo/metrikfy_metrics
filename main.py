@@ -107,6 +107,11 @@ def metrics():
 
         uid_ref = db.collection(u'contas_metrikfy').document(uid)
         if start_date == end_date:
+            start_date = end_date - timedelta(days=6)
+
+        delta = timedelta(days=1)
+
+        while start_date <= end_date:
             for account in accounts:
                 account_ref = uid_ref.collection('contas_facebook').document(account.get('id'))
                 now = start_date.date().strftime("%Y-%m-%d")
@@ -116,7 +121,8 @@ def metrics():
                     for campaign in res.json():
                         if campaigns:
                             if campaign.get('campaign_id') in campaigns:
-                                metrics_ref = account_ref.collection('metricas').document(campaign.get('campaign_id'))
+                                metrics_ref = account_ref.collection('metricas').document(
+                                    campaign.get('campaign_id'))
                                 result_ref = metrics_ref.collection('consolidado').document(now)
                                 batch.set(result_ref, clean_campaign(campaign))
                                 raw_campaigns.append(clean_campaign(campaign))
@@ -125,29 +131,7 @@ def metrics():
                             result_ref = metrics_ref.collection('consolidado').document(now)
                             batch.set(result_ref, clean_campaign(campaign))
                             raw_campaigns.append(clean_campaign(campaign))
-        else:
-            delta = timedelta(days=1)
-            while start_date <= end_date:
-                for account in accounts:
-                    account_ref = uid_ref.collection('contas_facebook').document(account.get('id'))
-                    now = start_date.date().strftime("%Y-%m-%d")
-                    url = f'https://us-east1-etus-metrikfy-prod.cloudfunctions.net/metrikfy-facebookads-dev-getData?user_id={uid}&profile_id={account.get("profile_id")}&account_id={account.get("id")}&level=campaign&date={now}'
-                    res = requests.get(url)
-                    if res.status_code == 200:
-                        for campaign in res.json():
-                            if campaigns:
-                                if campaign.get('campaign_id') in campaigns:
-                                    metrics_ref = account_ref.collection('metricas').document(
-                                        campaign.get('campaign_id'))
-                                    result_ref = metrics_ref.collection('consolidado').document(now)
-                                    batch.set(result_ref, clean_campaign(campaign))
-                                    raw_campaigns.append(clean_campaign(campaign))
-                            else:
-                                metrics_ref = account_ref.collection('metricas').document(campaign.get('campaign_id'))
-                                result_ref = metrics_ref.collection('consolidado').document(now)
-                                batch.set(result_ref, clean_campaign(campaign))
-                                raw_campaigns.append(clean_campaign(campaign))
-                start_date += delta
+            start_date += delta
         batch.commit()
         result = format_metrics(raw_campaigns)
         return jsonify(result), 200
