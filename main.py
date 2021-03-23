@@ -107,7 +107,7 @@ def metrics():
 
         uid_ref = db.collection(u'contas_metrikfy').document(uid)
         if start_date == end_date:
-            start_date = end_date - timedelta(days=6)
+            start_date = end_date - timedelta(days=0)
 
         delta = timedelta(days=1)
 
