@@ -9,6 +9,9 @@ freeze-deps:
 testelocal:
 	curl "http://localhost:8088" -H "Content-Type:application/json" -H "X-UID:7P7XMLKzHwQIjb9q5SgQDUd9bLm1"
 
+testelocal2:
+	curl "http://localhost:8088?campaigns=23845213653760083" -H "Content-Type:application/json" -H "X-UID:7P7XMLKzHwQIjb9q5SgQDUd9bLm1"
+
 testeprod:
 	curl "https://metrics-e24zyhbnkq-uc.a.run.app?accounts=act_1360566347624412&campaigns=23846895715500393,23846093461800393,23846897167180393" -H "Content-Type:application/json" -H "X-UID:7P7XMLKzHwQIjb9q5SgQDUd9bLm1"
 
