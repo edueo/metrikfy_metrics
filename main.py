@@ -188,8 +188,7 @@ def metrics():
                     if metrics_dict is not None:
                         result.append(metrics_dict)
             start_date += delta
-
-        output = json.loads(format_metrics(result))
+        output = json.loads(format_metrics(result)) if result else result
         return jsonify(output), 200
 
     except Exception as e:
