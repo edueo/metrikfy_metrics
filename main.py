@@ -133,13 +133,6 @@ def format_metrics(records):
 
     df = pd.DataFrame.from_records(records)
 
-    for action in action_type:
-        if action in df.columns:
-            df[action] = df[action].astype(float)
-        cost_per = f'cost_per_{action}'
-        if cost_per in df.columns:
-            df[cost_per] = df[cost_per].astype(float)
-
     return df.agg(['sum', 'min', 'mean', 'median']).to_json(orient='columns')
 
 
